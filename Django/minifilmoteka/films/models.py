@@ -3,7 +3,7 @@
 from django.db import models
 
 class Film(models.Model):
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, default="qwert")
     description = models.TextField(blank=True)
     release_date = models.DateField(null=True)
     poster_url = models.URLField(blank=True)

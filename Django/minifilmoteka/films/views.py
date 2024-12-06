@@ -85,10 +85,3 @@ def test_serialization(request):
     serializer.is_valid()
 
     return JsonResponse({'status': 'success', 'serialized_data': serializer.data})
-
-def test_serialization_view(request):
-    return render(request, 'test_serialization.html')
-
-def film_list_view(request):
-    films = get_object_or_404(Film)
-    return render(request, 'film_list.html', {'films': films})

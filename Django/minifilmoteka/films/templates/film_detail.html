@@ -20,7 +20,7 @@
             border-radius: 5px;
             margin-top: 50px;
         }
-        .film-poster {
+        .film-video {
             max-width: 100%;
             height: auto;
             border-radius: 5px;
@@ -43,7 +43,12 @@
 </head>
 <body>
     <div class="container">
-        <img src="{{ film.poster_url }}" alt="{{ film.title }}" class="film-poster">
+        <video controls class="film-video">
+            <source src="{{ film.poster_url }}" type="video/mp4">
+            <source src="{{ film.poster_url }}" type="video/webm">
+            <source src="{{ film.poster_url }}" type="video/ogg">
+            Your browser does not support the video tag.
+        </video>
         <div class="film-title">{{ film.title }}</div>
         <div class="film-description">{{ film.description }}</div>
         <div class="film-release-date">Release Date: {{ film.release_date }}</div>
