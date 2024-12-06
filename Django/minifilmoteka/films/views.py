@@ -5,32 +5,67 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Film
-from .serializers import FilmSerializer
+from .models import Film, Author
+from .serializers import FilmSerializer, AuthorSerializer, UserSerializer, GroupSerializer
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from django.http import JsonResponse
+from rest_framework import mixins
+from django.contrib.auth.models import User, Group
 import io
 
-class FilmList(generics.ListCreateAPIView):
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.owner == request.user
+
+
+class FilmList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
     queryset = Film.objects.all()
     serializer_class = FilmSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-class FilmDetail(generics.RetrieveUpdateDestroyAPIView):
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+class FilmDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
     queryset = Film.objects.all()
     serializer_class = FilmSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 class FilmViewSet(viewsets.ModelViewSet):
     queryset = Film.objects.all()
     serializer_class = FilmSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+'''
 @api_view(['GET', 'POST'])
 def film_list(request):
     if request.method == 'GET':
@@ -66,7 +101,7 @@ def film_detail(request, pk):
     elif request.method == 'DELETE':
         film.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
+'''
 
 def film_detail_view(request, pk):
     film = get_object_or_404(Film, pk=pk)
